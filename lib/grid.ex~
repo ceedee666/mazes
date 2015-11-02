@@ -1,0 +1,28 @@
+defmodule Grid do
+	defstruct [:rows]
+
+	def new(rows, cols) do
+		%Grid{ rows: init_grid(rows, cols) |> config_grid }
+	end
+
+	defp init_grid( rows, cols) do
+		for r <- 0..rows-1 do
+			(for c <- 0..cols-1,  do: Cell.new(r,c)) |> List.to_tuple
+		end |> List.to_tuple
+	end
+
+	defp config_grid(grid) do
+		grid
+	end
+
+	def each_row(%Grid{} = grid) do
+		Tuple.to_list(grid.rows)
+	end
+
+	def each_cell(%Grid{} = grid) do
+		Tuple.to_list(grid.rows)
+		|> Enum.map(&(Tuple.to_list(&1)))
+		|> List.flatten
+	end
+								
+end

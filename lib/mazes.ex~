@@ -1,0 +1,6 @@
+defmodule Mazes do
+	def generate_using_binary_tree(grid = %Grid{}) do
+		Grid.all_cell_indices(grid)
+		|> Enum.each
+	end
+end
