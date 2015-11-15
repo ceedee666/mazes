@@ -4,56 +4,19 @@ defmodule Grid do
 	@doc """
     Initializes a new Grid 
   """
-	def initialize(rows, cols)
+	def new(rows, cols)
 	  when is_integer(rows) and is_integer(cols) and rows >= 1 and cols >=1 do
-		
-		%Grid{cells: init_empty_grid(rows, cols), rows: rows, cols: cols}
+		%Grid{cells: init_empty_cells(rows, cols), rows: rows, cols: cols}
 	end
 
-  defp init_empty_grid(rows, cols) do
-	  init_tuple(
-			fn -> init_tuple(
-        fn -> %{:neighbors => HashSet.new} end,
-        cols) end,
-			rows)
-	end
-
-	defp init_tuple(fun, n) do
-		Stream.repeatedly(fun)
-		|> Enum.take(n)
-		|> List.to_tuple
-	end
-
-	@doc """
-	  Updates the `grid' cell specified by the `index` with the 
-    new `cell` value
-  """
-	def put_cell(index = [r,c], cell, grid) do
-		new_grid_row = elem(grid.cells, r) |> put_elem(c, cell)		
-		%Grid{grid | cells: put_elem(grid.cells, r, new_grid_row)}
-	end
-	
-	
-	@doc """
-    Returns a list of valid neighbor cell indexes for a grid and a given index
-  """
-	def neighbors([r, c], grid) do
-		[[r-1, c], [r+1, c], [r, c-1], [r, c+1]]
-		|> Enum.filter(fn([r,c]) ->
-			0 <= r and
-			r <  grid.rows and
-		  0 <= c and
-		  c <  grid.cols end)
-	end
-
-	@doc """
-    Returns a list of valid neighbor cell indexes to the north or east 
-    for a 'grid' and a given 'index'
-  """
-	def neighbors_ne(grid, index = [index_r,index_c]) do
-		neighbors(index, grid) |>
-			Enum.filter(fn([r|c]) -> index_r <= r and
-			                         index_c <= c end)
+  defp init_empty_cells(rows, cols) do
+	  for r <- 0..rows-1, c <- 0..cols-1 do [r,c] end |>
+		  Enum.reduce(HashDict.new,
+				fn i, h ->
+					Dict.put(h, i,%{:neighbors => HashSet.new}
+					)
+				end
+			)
 	end
 
 	@doc """
@@ -64,20 +27,47 @@ defmodule Grid do
 	end
 
 	@doc """
+    Returns a list of valid neighbor cell indexes for a grid and a given index
+  """
+	def neighbors(grid, [r, c]) do
+		[[r-1, c], [r+1, c], [r, c-1], [r, c+1]] |>
+			Enum.filter(
+				&is_index_valid?(grid, &1))
+	end
+
+	@doc """
+    Returns a list of valid neighbor cell indexes to the north or east 
+    for a 'grid' and a given 'index'
+  """
+ 	def neighbors_ne(grid, [r,c]) do
+		[[r-1,c], [r, c+1]] |>
+			Enum.filter(
+				&is_index_valid?(grid, &1))
+	end
+
+  def is_index_valid?(grid, [r,c]) do
+		0 <= r and
+		r <  grid.rows and
+		0 <= c and
+		c <  grid.cols
+	end
+	
+	@doc """
 	   Links two cells in the grid
 	"""
-	def link_cells(source_cell_index = [sr,sc],
-								 target_cell_index,
-								 grid,
+	def link_cells(grid,
+								 source_index,
+								 target_index,
 								 bidir \\ true) do
-		cell = elem(grid.cells, sr) |> elem(sc) 
-	  cell = %{cell | :neighbors => HashSet.put(cell.neighbors, target_cell_index)}
-	  grid = put_cell(source_cell_index, cell, grid)
+		unless Enum.empty?(target_index) do
+			cell = Dict.get(grid.cells, source_index)
+			cell = Dict.put(cell, :neighbors, Set.put(cell.neighbors, target_index))
+			grid = %Grid{grid | cells: HashDict.put(grid.cells, source_index, cell)}
 
-		if bidir do
-			 grid = link_cells(target_cell_index, source_cell_index, grid, false)
+			if bidir do
+				grid = link_cells(grid, target_index, source_index, false)
+			end
 		end
-
 		grid
 	end
 end
