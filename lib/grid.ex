@@ -13,8 +13,7 @@ defmodule Grid do
 	  for r <- 0..rows-1, c <- 0..cols-1 do [r,c] end |>
 		  Enum.reduce(HashDict.new,
 				fn i, h ->
-					Dict.put(h, i,%{:neighbors => HashSet.new}
-					)
+					Dict.put(h, i, %{:neighbors => HashSet.new})
 				end
 			)
 	end
@@ -55,9 +54,9 @@ defmodule Grid do
 	@doc """
 	   Links two cells in the grid
 	"""
-	def link_cells(grid,
+	def link_cells(target_index,
 								 source_index,
-								 target_index,
+								 grid,
 								 bidir \\ true) do
 		unless Enum.empty?(target_index) do
 			cell = Dict.get(grid.cells, source_index)
@@ -65,7 +64,7 @@ defmodule Grid do
 			grid = %Grid{grid | cells: HashDict.put(grid.cells, source_index, cell)}
 
 			if bidir do
-				grid = link_cells(grid, target_index, source_index, false)
+				grid = link_cells(source_index, target_index, grid, false)
 			end
 		end
 		grid

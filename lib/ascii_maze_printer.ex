@@ -6,7 +6,7 @@ defmodule AsciiMazePrinter do
 		top = "+" <> String.duplicate("---+",grid.cols) <> "\n"
 		
 		rl = for r <- 0..grid.rows-1 do
-			ml =for c <- 0..grid.cols-1 do
+			ml = for c <- 0..grid.cols-1 do
 				if c == 0 do
 					m = "|   "
 				else
@@ -20,6 +20,7 @@ defmodule AsciiMazePrinter do
 				else
 					m = m <> "|"
 				end
+				m
 			end
 
 			bl = for c <- 0..grid.cols-1 do
@@ -36,6 +37,7 @@ defmodule AsciiMazePrinter do
 				else
 					b = b <> "---+"
 				end
+				b
 			end
 
 			s = Enum.reduce(ml, fn s, acc -> acc <> s end) <> "\n"

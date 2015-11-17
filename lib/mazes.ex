@@ -5,20 +5,15 @@ defmodule Mazes do
 	def generate_using_binary_tree(grid = %Grid{}) do
 		:random.seed(:os.timestamp)
 
-		generate_using_binary_tree(grid, Grid.all_cell_indices(grid))
+		Grid.all_cell_indices(grid) |>
+			Enum.reduce(grid, &generate_using_binary_tree(&1, &2))
 	end
 
-  defp generate_using_binary_tree(grid, [h|t]) do
-		random_neighbor =
-			Grid.neighbors_ne(grid, h) |>
+  defp generate_using_binary_tree(index, grid) do
+		Grid.neighbors_ne(grid, index) |>
 			Enum.take_random(1) |>
-			List.flatten
-		
-		Grid.link_cells(grid, h, random_neighbor) |>
-			generate_using_binary_tree(t)													
+			List.flatten |>
+			Grid.link_cells(index, grid)							
 	end
 
-	defp generate_using_binary_tree(grid, _) do
-    grid
-	end
 end
